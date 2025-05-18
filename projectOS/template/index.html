@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LinuxPerfMon</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function updateMetrics() {
+            $.getJSON('/api/metrics', function(data) {
+                $('#cpu_overall').text(data.cpu_overall.toFixed(1) + '%');
+                $('#memory_percent').text(data.memory_percent.toFixed(1) + '%');
+                $('#disk_percent').text(data.disk_percent.toFixed(1) + '%');
+                $('#network_sent').text(data.network.last_bytes_sent_per_sec.toFixed(2) + ' B/s');
+                $('#network_recv').text(data.network.last_bytes_recv_per_sec.toFixed(2) + ' B/s');
+            });
+        }
+        setInterval(updateMetrics, 5000); // Update every 5 seconds
+        $(document).ready(updateMetrics); // Initial update
+    </script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        p { font-size: 1.1em; }
+    </style>
+</head>
+<body>
+    <h1>LinuxPerfMon</h1>
+    <p>CPU Usage (Overall): <span id="cpu_overall">0%</span></p>
+    <p>Memory Usage: <span id="memory_percent">0%</span></p>
+    <p>Disk Usage (/): <span id="disk_percent">0%</span></p>
+    <p>Network Sent (eth0): <span id="network_sent">0 B/s</span></p>
+    <p>Network Received (eth0): <span id="network_recv">0 B/s</span></p>
+</body>
+</html>
