@@ -6,7 +6,7 @@ app = Flask(__name__)
 # InfluxDB configuration
 HOST = 'localhost'
 PORT = 8086
-DATABASE = 'linuxperfmon'
+DATABASE = 'linuxperform'
 client = InfluxDBClient(host=HOST, port=PORT, database=DATABASE)
 
 def get_latest_metrics():
