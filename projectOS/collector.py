@@ -1,6 +1,7 @@
 import psutil
 from influxdb import InfluxDBClient
 import time
+import math
 
 # InfluxDB configuration
 HOST = 'localhost'
@@ -11,23 +12,18 @@ client = InfluxDBClient(host=HOST, port=PORT)
 client.create_database(DATABASE)
 client.switch_database(DATABASE)
 
-# Initialize variables for network rate calculation
 previous_network_io = None
 previous_time = None
 
 while True:
-    # Measure CPU usage (single interval, store result)
     cpu_percent_overall = psutil.cpu_percent(interval=1)
     cpu_percent_per_core = psutil.cpu_percent(interval=1, percpu=True)
-
     current_time = time.time()
 
-    # Collect memory usage
     memory = psutil.virtual_memory()
-
-    # Collect disk usage safely
     disk_partitions = psutil.disk_partitions()
     disk_usage = {}
+
     for partition in disk_partitions:
         try:
             usage = psutil.disk_usage(partition.mountpoint)
@@ -35,10 +31,8 @@ while True:
         except PermissionError:
             continue
 
-    # Collect network I/O
     current_network_io = psutil.net_io_counters(pernic=True)
 
-    # Calculate network rates
     if previous_network_io is not None and previous_time is not None:
         delta_time = current_time - previous_time
         network_rates = {}
@@ -64,39 +58,48 @@ while True:
             } for interface in current_network_io
         }
 
-    # Update previous values
     previous_network_io = current_network_io
     previous_time = current_time
 
-    # Prepare data for InfluxDB
+    # Helper to clean up fields
+    def clean_fields(fields):
+        return {k: float(v) for k, v in fields.items()
+                if v is not None and not isinstance(v, str) and not math.isnan(v)}
+
     json_body = [
-        {"measurement": "cpu_usage_overall", "fields": {"percent": cpu_percent_overall}},
+        {"measurement": "cpu_usage_overall", "fields": clean_fields({"percent": cpu_percent_overall})},
         *[
-            {"measurement": "cpu_usage_per_core", "tags": {"core_id": str(i)}, "fields": {"percent": percent}}
+            {"measurement": "cpu_usage_per_core", "tags": {"core_id": str(i)},
+             "fields": clean_fields({"percent": percent})}
             for i, percent in enumerate(cpu_percent_per_core)
         ],
-        {"measurement": "memory_usage", "fields": {
+        {"measurement": "memory_usage", "fields": clean_fields({
             "total": memory.total,
             "used": memory.used,
             "free": memory.free,
             "percent": memory.percent
-        }},
+        })},
         *[
-            {"measurement": "disk_usage", "tags": {"partition": partition}, "fields": {
-                "total": usage.total,
-                "used": usage.used,
-                "free": usage.free,
-                "percent": usage.percent
-            }} for partition, usage in disk_usage.items()
+            {"measurement": "disk_usage", "tags": {"partition": str(partition)},
+             "fields": clean_fields({
+                 "total": usage.total,
+                 "used": usage.used,
+                 "free": usage.free,
+                 "percent": usage.percent
+             })}
+            for partition, usage in disk_usage.items()
         ],
         *[
-            {"measurement": "network_usage", "tags": {"interface": interface}, "fields": rates}
+            {"measurement": "network_usage", "tags": {"interface": str(interface)},
+             "fields": clean_fields(rates)}
             for interface, rates in network_rates.items()
         ]
     ]
 
-    # Write data to InfluxDB
     try:
         client.write_points(json_body)
     except Exception as e:
-        print(f"Failed to write to InfluxDB: {e}")
+        print("Failed to write to InfluxDB:", e)
+        print("Data attempted to send:")
+        from pprint import pprint
+        pprint(json_body)
