@@ -8,12 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #1e3a8a, #1e1e2e);
+            background: linear-gradient(135deg, #e0f2fe, #f3f4f6);
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
         }
         .glow {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
         }
         .progress-bar {
             transition: width 0.5s ease-in-out;
@@ -23,24 +23,24 @@
         }
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
         }
     </style>
 </head>
-<body class="text-white">
+<body class="text-gray-800">
     <div class="container mx-auto p-6">
         <header class="text-center mb-12">
-            <h1 class="text-4xl font-bold mb-2">LinuxPerfMon Dashboard</h1>
-            <p class="text-lg text-blue-200">Real-time system performance monitoring</p>
+            <h1 class="text-4xl font-bold mb-2 text-blue-900">LinuxPerfMon Dashboard</h1>
+            <p class="text-lg text-blue-600">Real-time system performance monitoring</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- CPU Usage -->
-            <div class="card bg-gray-800 rounded-xl p-6 glow">
-                <h2 class="text-xl font-semibold mb-2">CPU Usage (Overall)</h2>
-                <p class="text-sm text-gray-300 mb-4">Percentage of CPU resources currently in use across all cores.</p>
+            <div class="card bg-white rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">CPU Usage (Overall)</h2>
+                <p class="text-sm text-gray-500 mb-4">Percentage of CPU resources currently in use across all cores.</p>
                 <div class="relative pt-1">
-                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
                         <div id="cpu-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 0%"></div>
                     </div>
                 </div>
@@ -49,11 +49,11 @@
             </div>
 
             <!-- Memory Usage -->
-            <div class="card bg-gray-800 rounded-xl p-6 glow">
-                <h2 class="text-xl font-semibold mb-2">Memory Usage</h2>
-                <p class="text-sm text-gray-300 mb-4">Percentage of RAM currently utilized by running processes.</p>
+            <div class="card bg-white rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">Memory Usage</h2>
+                <p class="text-sm text-gray-500 mb-4">Percentage of RAM currently utilized by running processes.</p>
                 <div class="relative pt-1">
-                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
                         <div id="memory-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500" style="width: 0%"></div>
                     </div>
                 </div>
@@ -62,11 +62,11 @@
             </div>
 
             <!-- Disk Usage -->
-            <div class="card bg-gray-800 rounded-xl p-6 glow">
-                <h2 class="text-xl font-semibold mb-2">Disk Usage (/)</h2>
-                <p class="text-sm text-gray-300 mb-4">Percentage of storage used on the root filesystem.</p>
+            <div class="card bg-white rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">Disk Usage (/)</h2>
+                <p class="text-sm text-gray-500 mb-4">Percentage of storage used on the root filesystem.</p>
                 <div class="relative pt-1">
-                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
                         <div id="disk-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500" style="width: 0%"></div>
                     </div>
                 </div>
@@ -75,24 +75,24 @@
             </div>
 
             <!-- Network Sent -->
-            <div class="card bg-gray-800 rounded-xl p-6 glow">
-                <h2 class="text-xl font-semibold mb-2">Network Sent (eth0)</h2>
-                <p class="text-sm text-gray-300 mb-4">Data transmission rate from the eth0 network interface.</p>
+            <div class="card bg-white rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">Network Sent (eth0)</h2>
+                <p class="text-sm text-gray-500 mb-4">Data transmission rate from the eth0 network interface.</p>
                 <p class="text-lg font-medium"><span id="network-sent-value">0</span> B/s</p>
                 <canvas id="networkSentChart" class="mt-4" height="100"></canvas>
             </div>
 
             <!-- Network Received -->
-            <div class="card bg-gray-800 rounded-xl p-6 glow">
-                <h2 class="text-xl font-semibold mb-2">Network Received (eth0)</h2>
-                <p class="text-sm text-gray-300 mb-4">Data receiving rate on the eth0 network interface.</p>
+            <div class="card bg-white rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2 text-gray-800">Network Received (eth0)</h2>
+                <p class="text-sm text-gray-500 mb-4">Data receiving rate on the eth0 network interface.</p>
                 <p class="text-lg font-medium"><span id="network-recv-value">0</span> B/s</p>
                 <canvas id="networkRecvChart" class="mt-4" height="100"></canvas>
             </div>
         </div>
 
-        <footer class="text-center mt-12 text-gray-400">
-            <p>Updated as of <span id="update-time">01:32 PM IST, Sunday, June 22, 2025</span></p>
+        <footer class="text-center mt-12 text-gray-500">
+            <p>Updated as of <span id="update-time">02:03 PM IST, Sunday, June 22, 2025</span></p>
         </footer>
     </div>
 
