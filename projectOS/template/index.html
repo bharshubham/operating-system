@@ -1,33 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>LinuxPerfMon</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-        function updateMetrics() {
-            $.getJSON('/api/metrics', function(data) {
-                $('#cpu_overall').text(data.cpu_overall.toFixed(1) + '%');
-                $('#memory_percent').text(data.memory_percent.toFixed(1) + '%');
-                $('#disk_percent').text(data.disk_percent.toFixed(1) + '%');
-                $('#network_sent').text(data.network.last_bytes_sent_per_sec.toFixed(2) + ' B/s');
-                $('#network_recv').text(data.network.last_bytes_recv_per_sec.toFixed(2) + ' B/s');
-            });
-        }
-        setInterval(updateMetrics, 5000); // Update every 5 seconds
-        $(document).ready(updateMetrics); // Initial update
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinuxPerfMon - Light Theme Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        p { font-size: 1.1em; }
+        body {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #2563eb, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .metric-label {
+            color: #6b7280;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 0.75rem;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
-<body>
-    <h1>LinuxPerfMon</h1>
-    <p>CPU Usage (Overall): <span id="cpu_overall">0%</span></p>
-    <p>Memory Usage: <span id="memory_percent">0%</span></p>
-    <p>Disk Usage (/): <span id="disk_percent">0%</span></p>
-    <p>Network Sent (eth0): <span id="network_sent">0 B/s</span></p>
-    <p>Network Received (eth0): <span id="network_recv">0 B/s</span></p>
+<body class="p-6">
+    <div class="container mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-bold tracking-tight">LinuxPerfMon Dashboard</h1>
+            <p class="text-gray-500 mt-2 text-lg">Real-time system performance monitoring</p>
+        </header>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- CPU Usage Card -->
+            <div class="card rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="metric-label">CPU Usage (Overall)</h2>
+                    <div class="tooltip">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5v14"/>
+                        </svg>
+                        <span class="tooltiptext">Percentage of CPU resources currently in use across all cores.</span>
+                    </div>
+                </div>
+                <p class="metric-value mt-4">0%</p>
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill w-0"></div>
+                </div>
+                <p class="text-gray-500 text-sm mt-2">System processing load</p>
+            </div>
+            <!-- Memory Usage Card -->
+            <div class="card rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="metric-label">Memory Usage</h2>
+                    <div class="tooltip">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        <span class="tooltiptext">Percentage of RAM currently utilized by running processes.</span>
+                    </div>
+                </div>
+                <p class="metric-value mt-4">0%</p>
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill w-0"></div>
+                </div>
+                <p class="text-gray-500 text-sm mt-2">Physical RAM consumption</p>
+            </div>
+            <!-- Disk Usage Card -->
+            <div class="card rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="metric-label">Disk Usage (/)</h2>
+                    <div class="tooltip">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                        </svg>
+                        <span class="tooltiptext">Percentage of storage used on the root filesystem.</span>
+                    </div>
+                </div>
+                <p class="metric-value mt-4">0%</p>
+                <div class="progress-bar mt-4">
+                    <div class="progress-fill w-0"></div>
+                </div>
+                <p class="text-gray-500 text-sm mt-2">Root filesystem storage</p>
+            </div>
+            <!-- Network Sent Card -->
+            <div class="card rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="metric-label">Network Sent (eth0)</h2>
+                    <div class="tooltip">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                        </svg>
+                        <span class="tooltiptext">Data transmission rate from the eth0 network interface.</span>
+                    </div>
+                </div>
+                <p class="metric-value mt-4">0 B/s</p>
+                <p class="text-gray-500 text-sm mt-2">Outbound network traffic</p>
+            </div>
+            <!-- Network Received Card -->
+            <div class="card rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="metric-label">Network Received (eth0)</h2>
+                    <div class="tooltip">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                        <span class="tooltiptext">Data receiving rate on the eth0 network interface.</span>
+                    </div>
+                </div>
+                <p class="metric-value mt-4">0 B/s</p>
+                <p class="text-gray-500 text-sm mt-2">Inbound network traffic</p>
+            </div>
+        </div>
+        <footer class="mt-10 text-center text-gray-500 text-sm">
+            <p>Updated as of 01:32 PM IST, Sunday, June 22, 2025</p>
+        </footer>
+    </div>
 </body>
 </html>
