@@ -3,165 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinuxPerfMon - Light Theme Dashboard</title>
+    <title>LinuxPerfMon Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            background: linear-gradient(135deg, #1e3a8a, #1e1e2e);
             min-height: 100vh;
             font-family: 'Inter', sans-serif;
-            color: #1f2937;
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
         }
         .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        .metric-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(45deg, #2563eb, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .metric-label {
-            color: #6b7280;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-        .progress-bar {
-            background: #e5e7eb;
-            border-radius: 9999px;
-            overflow: hidden;
-            height: 0.75rem;
-        }
-        .progress-fill {
-            background: linear-gradient(90deg, #2563eb, #3b82f6);
-            height: 100%;
-            transition: width 0.5s ease;
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #1f2937;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.9rem;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
     </style>
 </head>
-<body class="p-6">
-    <div class="container mx-auto">
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl font-bold tracking-tight">LinuxPerfMon Dashboard</h1>
-            <p class="text-gray-500 mt-2 text-lg">Real-time system performance monitoring</p>
+<body class="text-white">
+    <div class="container mx-auto p-6">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-2">LinuxPerfMon Dashboard</h1>
+            <p class="text-lg text-blue-200">Real-time system performance monitoring</p>
         </header>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- CPU Usage Card -->
-            <div class="card rounded-lg p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="metric-label">CPU Usage (Overall)</h2>
-                    <div class="tooltip">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5v14"/>
-                        </svg>
-                        <span class="tooltiptext">Percentage of CPU resources currently in use across all cores.</span>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- CPU Usage -->
+            <div class="card bg-gray-800 rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2">CPU Usage (Overall)</h2>
+                <p class="text-sm text-gray-300 mb-4">Percentage of CPU resources currently in use across all cores.</p>
+                <div class="relative pt-1">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                        <div id="cpu-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" style="width: 0%"></div>
                     </div>
                 </div>
-                <p class="metric-value mt-4">0%</p>
-                <div class="progress-bar mt-4">
-                    <div class="progress-fill w-0"></div>
-                </div>
-                <p class="text-gray-500 text-sm mt-2">System processing load</p>
+                <p class="text-lg font-medium"><span id="cpu-value">0</span>%</p>
+                <canvas id="cpuChart" class="mt-4" height="100"></canvas>
             </div>
-            <!-- Memory Usage Card -->
-            <div class="card rounded-lg p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="metric-label">Memory Usage</h2>
-                    <div class="tooltip">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                        <span class="tooltiptext">Percentage of RAM currently utilized by running processes.</span>
+
+            <!-- Memory Usage -->
+            <div class="card bg-gray-800 rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2">Memory Usage</h2>
+                <p class="text-sm text-gray-300 mb-4">Percentage of RAM currently utilized by running processes.</p>
+                <div class="relative pt-1">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                        <div id="memory-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500" style="width: 0%"></div>
                     </div>
                 </div>
-                <p class="metric-value mt-4">0%</p>
-                <div class="progress-bar mt-4">
-                    <div class="progress-fill w-0"></div>
-                </div>
-                <p class="text-gray-500 text-sm mt-2">Physical RAM consumption</p>
+                <p class="text-lg font-medium"><span id="memory-value">0</span>%</p>
+                <canvas id="memoryChart" class="mt-4" height="100"></canvas>
             </div>
-            <!-- Disk Usage Card -->
-            <div class="card rounded-lg p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="metric-label">Disk Usage (/)</h2>
-                    <div class="tooltip">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                        </svg>
-                        <span class="tooltiptext">Percentage of storage used on the root filesystem.</span>
+
+            <!-- Disk Usage -->
+            <div class="card bg-gray-800 rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2">Disk Usage (/)</h2>
+                <p class="text-sm text-gray-300 mb-4">Percentage of storage used on the root filesystem.</p>
+                <div class="relative pt-1">
+                    <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-700">
+                        <div id="disk-progress" class="progress-bar shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-purple-500" style="width: 0%"></div>
                     </div>
                 </div>
-                <p class="metric-value mt-4">0%</p>
-                <div class="progress-bar mt-4">
-                    <div class="progress-fill w-0"></div>
-                </div>
-                <p class="text-gray-500 text-sm mt-2">Root filesystem storage</p>
+                <p class="text-lg font-medium"><span id="disk-value">0</span>%</p>
+                <canvas id="diskChart" class="mt-4" height="100"></canvas>
             </div>
-            <!-- Network Sent Card -->
-            <div class="card rounded-lg p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="metric-label">Network Sent (eth0)</h2>
-                    <div class="tooltip">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                        </svg>
-                        <span class="tooltiptext">Data transmission rate from the eth0 network interface.</span>
-                    </div>
-                </div>
-                <p class="metric-value mt-4">0 B/s</p>
-                <p class="text-gray-500 text-sm mt-2">Outbound network traffic</p>
+
+            <!-- Network Sent -->
+            <div class="card bg-gray-800 rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2">Network Sent (eth0)</h2>
+                <p class="text-sm text-gray-300 mb-4">Data transmission rate from the eth0 network interface.</p>
+                <p class="text-lg font-medium"><span id="network-sent-value">0</span> B/s</p>
+                <canvas id="networkSentChart" class="mt-4" height="100"></canvas>
             </div>
-            <!-- Network Received Card -->
-            <div class="card rounded-lg p-6">
-                <div class="flex items-center justify-between">
-                    <h2 class="metric-label">Network Received (eth0)</h2>
-                    <div class="tooltip">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                        </svg>
-                        <span class="tooltiptext">Data receiving rate on the eth0 network interface.</span>
-                    </div>
-                </div>
-                <p class="metric-value mt-4">0 B/s</p>
-                <p class="text-gray-500 text-sm mt-2">Inbound network traffic</p>
+
+            <!-- Network Received -->
+            <div class="card bg-gray-800 rounded-xl p-6 glow">
+                <h2 class="text-xl font-semibold mb-2">Network Received (eth0)</h2>
+                <p class="text-sm text-gray-300 mb-4">Data receiving rate on the eth0 network interface.</p>
+                <p class="text-lg font-medium"><span id="network-recv-value">0</span> B/s</p>
+                <canvas id="networkRecvChart" class="mt-4" height="100"></canvas>
             </div>
         </div>
-        <footer class="mt-10 text-center text-gray-500 text-sm">
-            <p>Updated as of 01:32 PM IST, Sunday, June 22, 2025</p>
+
+        <footer class="text-center mt-12 text-gray-400">
+            <p>Updated as of <span id="update-time">01:32 PM IST, Sunday, June 22, 2025</span></p>
         </footer>
     </div>
+
+    <script>
+        // Initialize charts
+        const charts = {
+            cpu: new Chart(document.getElementById('cpuChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU Usage (%)',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            }),
+            memory: new Chart(document.getElementById('memoryChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Memory Usage (%)',
+                        data: [],
+                        borderColor: '#10b981',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            }),
+            disk: new Chart(document.getElementById('diskChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Disk Usage (%)',
+                        data: [],
+                        borderColor: '#a855f7',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            }),
+            networkSent: new Chart(document.getElementById('networkSentChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Network Sent (B/s)',
+                        data: [],
+                        borderColor: '#f59e0b',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+            }),
+            networkRecv: new Chart(document.getElementById('networkRecvChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Network Received (B/s)',
+                        data: [],
+                        borderColor: '#ec4899',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+            })
+        };
+
+        // Function to format bytes to human-readable
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B/s';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB/s';
+            else return (bytes / (1024 * 1024)).toFixed(1) + ' MB/s';
+        }
+
+        // Function to fetch and update metrics
+        function updateMetrics() {
+            fetch('/api/metrics')
+                .then(response => response.json())
+                .then(data => {
+                    // Update CPU
+                    document.getElementById('cpu-progress').style.width = `${data.cpu_overall}%`;
+                    document.getElementById('cpu-value').textContent = data.cpu_overall.toFixed(1);
+                    charts.cpu.data.labels.push(new Date().toLocaleTimeString());
+                    charts.cpu.data.datasets[0].data.push(data.cpu_overall);
+                    if (charts.cpu.data.labels.length > 20) {
+                        charts.cpu.data.labels.shift();
+                        charts.cpu.data.datasets[0].data.shift();
+                    }
+                    charts.cpu.update();
+
+                    // Update Memory
+                    document.getElementById('memory-progress').style.width = `${data.memory_percent}%`;
+                    document.getElementById('memory-value').textContent = data.memory_percent.toFixed(1);
+                    charts.memory.data.labels.push(new Date().toLocaleTimeString());
+                    charts.memory.data.datasets[0].data.push(data.memory_percent);
+                    if (charts.memory.data.labels.length > 20) {
+                        charts.memory.data.labels.shift();
+                        charts.memory.data.datasets[0].data.shift();
+                    }
+                    charts.memory.update();
+
+                    // Update Disk
+                    document.getElementById('disk-progress').style.width = `${data.disk_percent}%`;
+                    document.getElementById('disk-value').textContent = data.disk_percent.toFixed(1);
+                    charts.disk.data.labels.push(new Date().toLocaleTimeString());
+                    charts.disk.data.datasets[0].data.push(data.disk_percent);
+                    if (charts.disk.data.labels.length > 20) {
+                        charts.disk.data.labels.shift();
+                        charts.disk.data.datasets[0].data.shift();
+                    }
+                    charts.disk.update();
+
+                    // Update Network Sent
+                    document.getElementById('network-sent-value').textContent = formatBytes(data.network.last_bytes_sent_per_sec);
+                    charts.networkSent.data.labels.push(new Date().toLocaleTimeString());
+                    charts.networkSent.data.datasets[0].data.push(data.network.last_bytes_sent_per_sec);
+                    if (charts.networkSent.data.labels.length > 20) {
+                        charts.networkSent.data.labels.shift();
+                        charts.networkSent.data.datasets[0].data.shift();
+                    }
+                    charts.networkSent.update();
+
+                    // Update Network Received
+                    document.getElementById('network-recv-value').textContent = formatBytes(data.network.last_bytes_recv_per_sec);
+                    charts.networkRecv.data.labels.push(new Date().toLocaleTimeString());
+                    charts.networkRecv.data.datasets[0].data.push(data.network.last_bytes_recv_per_sec);
+                    if (charts.networkRecv.data.labels.length > 20) {
+                        charts.networkRecv.data.labels.shift();
+                        charts.networkRecv.data.datasets[0].data.shift();
+                    }
+                    charts.networkRecv.update();
+
+                    // Update timestamp
+                    document.getElementById('update-time').textContent = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' });
+                });
+        }
+
+        // Initial update and set interval
+        updateMetrics();
+        setInterval(updateMetrics, 5000);
+    </script>
 </body>
 </html>
